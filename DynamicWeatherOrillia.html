@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dynamic CSS Weather Widget</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(to top right, #2c3e50, #3498db);
+      transition: background 1s ease;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      width: 300px;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .weather-icon {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+
+    .sun {
+      width: 60px;
+      height: 60px;
+      background: yellow;
+      border-radius: 50%;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      box-shadow: 0 0 30px yellow;
+      animation: rotate 6s linear infinite;
+    }
+
+    .cloud {
+      width: 80px;
+      height: 50px;
+      background: #fff;
+      border-radius: 40px;
+      position: absolute;
+      top: 20px;
+      left: 10px;
+      animation: floatClouds 4s ease-in-out infinite;
+    }
+
+    .cloud::after, .cloud::before {
+      content: "";
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .cloud::before {
+      width: 40px; height: 40px;
+      top: -20px; left: 20px;
+    }
+
+    .cloud::after {
+      width: 30px; height: 30px;
+      top: -15px; left: 50px;
+    }
+
+    .rain {
+      width: 2px;
+      height: 10px;
+      background: lightblue;
+      position: absolute;
+      top: 60px;
+      left: 30px;
+      animation: rainDrop 0.6s linear infinite;
+    }
+
+    .snowflake {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      font-size: 20px;
+      animation: snowFall 5s linear infinite;
+      color: white;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes floatClouds {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(10px); }
+    }
+
+    @keyframes rainDrop {
+      0% { opacity: 1; top: 60px; }
+      100% { opacity: 0; top: 90px; }
+    }
+
+    @keyframes snowFall {
+      0% { top: 0; opacity: 1; }
+      100% { top: 100px; opacity: 0; }
+    }
+
+    .temp {
+      font-size: 2em;
+      margin: 10px 0;
+    }
+
+    .desc {
+      text-transform: capitalize;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="weather-icon" id="icon"></div>
+    <h2 id="location">--</h2>
+    <div class="temp" id="temp">--°C</div>
+    <div class="desc" id="desc">--</div>
+  </div>
+
+  <script>
+    const apiKey = '8017b635b6634863f4ed1860872085d5';
+    const lat = 44.6024;
+    const lon = -79.4156;
+
+    function setVisuals(condition) {
+      const icon = document.getElementById('icon');
+      icon.innerHTML = ''; // clear previous icons
+      condition = condition.toLowerCase();
+
+      if (condition.includes('clear')) {
+        document.body.style.background = 'linear-gradient(to right, #fceabb, #f8b500)';
+        const sun = document.createElement('div');
+        sun.className = 'sun';
+        icon.appendChild(sun);
+      }
+      else if (condition.includes('cloud')) {
+        document.body.style.background = 'linear-gradient(to right, #bdc3c7, #2c3e50)';
+        const cloud = document.createElement('div');
+        cloud.className = 'cloud';
+        icon.appendChild(cloud);
+      }
+      else if (condition.includes('rain')) {
+        document.body.style.background = 'linear-gradient(to right, #4e54c8, #8f94fb)';
+        const cloud = document.createElement('div');
+        cloud.className = 'cloud';
+        const rain = document.createElement('div');
+        rain.className = 'rain';
+        icon.appendChild(cloud);
+        icon.appendChild(rain);
+      }
+      else if (condition.includes('snow')) {
+        document.body.style.background = 'linear-gradient(to right, #83a4d4, #b6fbff)';
+        const snow = document.createElement('div');
+        snow.className = 'snowflake';
+        snow.innerText = '❄';
+        icon.appendChild(snow);
+      } else {
+        document.body.style.background = 'linear-gradient(to right, #2c3e50, #34495e)';
+      }
+    }
+
+    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('location').innerText = data.name;
+        document.getElementById('temp').innerText = `${Math.round(data.main.temp)}°C`;
+        const desc = data.weather[0].description;
+        document.getElementById('desc').innerText = desc;
+        setVisuals(desc);
+      });
+  </script>
+</body>
+</html>
+ 
